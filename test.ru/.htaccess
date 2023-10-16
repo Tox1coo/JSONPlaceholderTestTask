@@ -1,0 +1,5 @@
+RewriteEngine On
+
+RewriteRule (users)$ ./users.php [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule . index.php [L]
