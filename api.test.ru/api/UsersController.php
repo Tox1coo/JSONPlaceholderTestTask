@@ -10,9 +10,6 @@ class UsersController extends APIEngine
     {
         parent::__construct($method,$entity,$query);
 
-        if(empty($id)) {
-            $this->getCollection();
-        }
         if(!empty($id)) $this->id = $id;
         if(!empty($list)) $this->list = $list;
 

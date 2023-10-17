@@ -7,9 +7,6 @@ class PostsController extends APIEngine
     public function __construct ($method,$entity, $id = '',$query='')
     {
         parent::__construct($method,$entity,$query);
-        if(empty($id) && $method === 'GET') {
-            $this->getCollection();
-        }
         if(!empty($id)) $this->id = $id;
 
     }
@@ -23,7 +20,6 @@ class PostsController extends APIEngine
                 break;
             case 'POST':
                 return $this->createPosts($_POST);
-                break;
             case 'PUT':
             case 'PATCH':
                 if(!empty($this->id)) {
@@ -32,7 +28,6 @@ class PostsController extends APIEngine
                     http_response_code(404);
                     return json_encode(['error' => 'not found post']);
                 }
-                break;
             case 'DELETE':
                 if(!empty($this->id)) {
                     return $this->deletePost(file_get_contents("php://input"));
@@ -40,7 +35,6 @@ class PostsController extends APIEngine
                     http_response_code(404);
                     return json_encode(['error' => 'not found post']);
                 }
-                break;
         }
     }
     private function getCurrentPost() {
@@ -49,41 +43,43 @@ class PostsController extends APIEngine
     
     private function createPosts($post) {
 
-        if(!isset($post['body']) || !isset($post['title']) || !isset($post['userId'])) {
+        if(empty($post['body']) || empty($post['title']) || empty($post['userId'])) {
             http_response_code(400);
             return json_encode(['error' => 'empty required fields']);
         }
-        return $this->request(self::BASE_URL . "$this->entity/$this->id", $post);
+        $postString = '';
+        foreach ($post as $key => $value) {
+            $postString .= "$key=$value&";
+        }
+        return $this->request(self::BASE_URL . "$this->entity/$this->id", $postString);
 
 
     }
     private function updatePost($body) {
-        if($this->method !== 'PATCH') {
-            if(!strpos($body, 'body')
-                || !strpos($body, 'title')
-                || !strpos($body, 'userId')
-                || !strpos($body, 'id')
-            ) {
-                http_response_code(400);
-                return json_encode(['error' => 'empty required fields']);
-            }
+
+        $body = json_decode($body,true);
+
+        $id = $body['id'];
+        $bodyString = '';
+        foreach ($body as $key => $value) {
+            $bodyString .= "$key=$value&";
         }
 
-        $id = preg_replace('/(.*)id=(.*)/', '$2', $body);
-
+        $prevMethod = $this->method;
         $this->method = 'GET';
         $response = $this->getCurrentPost();
         if($this->http_code === 404) {
             http_response_code(404);
             return json_encode(['error' => 'not fount post']);
         }
-        $this->method = 'PUT';
-        if((int)$id !== 0)
+        $this->method = $prevMethod;
+        file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/text.txt', $id);
+        if($id != 0)
             if((int)$id !== (int)$this->id) {
                 http_response_code(400);
                 return json_encode(['error' => 'id it\'s not correctly']);
             }
-        return $this->request(self::BASE_URL . "$this->entity/$this->id", $body);
+        return $this->request(self::BASE_URL . "$this->entity/$this->id", $bodyString);
     }
     private function deletePost() {
         return $this->request(self::BASE_URL . "$this->entity/$this->id");

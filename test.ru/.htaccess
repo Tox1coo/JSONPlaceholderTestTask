@@ -1,5 +1,7 @@
 RewriteEngine On
 
 RewriteRule (users)$ ./users.php [L]
+RewriteRule (posts)\/(\d+)$ ./post.php [L]
+RewriteRule (users)\/(\d+)$ ./user.php [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule . index.php [L]

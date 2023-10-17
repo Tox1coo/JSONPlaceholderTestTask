@@ -5,7 +5,6 @@ namespace api;
 class APIEngine
 {
     const BASE_URL = "https://jsonplaceholder.typicode.com/";
-    protected $entities = null;
     protected $response = null;
     protected $http_code = null;
     protected $method = null;
@@ -19,20 +18,22 @@ class APIEngine
         $this->query = '?' . $query;
     }
 
-    function getCollection() {
+    public function getCollection() {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, self::BASE_URL . "$this->entity/" . $this->query);
-        $this->entities = curl_exec($ch);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $res = curl_exec($ch);
         $this->http_code= curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+        return $res;
     }
-    function request($url,$body = '') {
+    protected function request($url,$body = '') {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url . $this->query);
         switch ($this->method) {
             case 'POST':
                 curl_setopt($ch, CURLOPT_POST, 1);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
                 break;
             case 'PUT':
                 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
