@@ -31,7 +31,7 @@ switch ($entity) {
         $list = $request[3];
         $users = new UsersController($method, $entity,$id,$list,$query);
         if(!$id && $method === 'GET') {
-            $users->getCollection();
+            print_r($users->getCollection());
 
         } else {
             print_r($users->actionsUsers());
